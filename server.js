@@ -105,6 +105,27 @@ async function initDatabase() {
             )
         `);
 
+        // Automatic backward-compatibility migration for existing databases:
+        try {
+            const [pwdCols] = await connection.query("SHOW COLUMNS FROM users LIKE 'password_hash'");
+            if (pwdCols.length > 0) {
+                await connection.query("ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(255) NULL DEFAULT NULL");
+                console.log('[MIGRATION] Made legacy password_hash column nullable.');
+            }
+            const [authCols] = await connection.query("SHOW COLUMNS FROM users LIKE 'auth_hash'");
+            if (authCols.length === 0) {
+                await connection.query("ALTER TABLE users ADD COLUMN auth_hash VARCHAR(255) NULL");
+                console.log('[MIGRATION] Added auth_hash column to existing users table.');
+            }
+            const [saltCols] = await connection.query("SHOW COLUMNS FROM users LIKE 'salt'");
+            if (saltCols.length === 0) {
+                await connection.query("ALTER TABLE users ADD COLUMN salt VARCHAR(64) NULL");
+                console.log('[MIGRATION] Added salt column to existing users table.');
+            }
+        } catch (migErr) {
+            console.log('[MIGRATION NOTICE]', migErr.message);
+        }
+
         await connection.query(`
             CREATE TABLE IF NOT EXISTS vault_items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -187,8 +208,8 @@ app.post('/api/register', authLimiter, async (req, res) => {
         if (err.code === 'ER_DUP_ENTRY') {
             res.status(409).json({ error: 'IDENTITY_CONFLICT: Username already registered.' });
         } else {
-            console.error(err);
-            res.status(500).json({ error: 'CORE_FAULT: Storage operation failed.' });
+            console.error('Registration DB Error:', err);
+            res.status(500).json({ error: `CORE_FAULT: ${err.sqlMessage || 'Storage operation failed.'}` });
         }
     }
 });
