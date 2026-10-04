@@ -1,0 +1,24 @@
+{
+  "name": "nexus-vault",
+  "version": "2.0.0",
+  "description": "NEXUS VAULT - Personal Cybersecurity Infrastructure & Zero-Knowledge Digital Core",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["password-manager", "zero-knowledge", "aes-gcm", "web-crypto"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.24.5"
+  }
+}

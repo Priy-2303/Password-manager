@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS VAULT // Personal Security Infrastructure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="nexus-theme">
+
+    <!-- Ambient Grid & Particle Matrix -->
+    <div class="cyber-ambient">
+        <canvas id="ambient-canvas"></canvas>
+        <div class="scanline-overlay" aria-hidden="true"></div>
+        <div class="vignette-overlay" aria-hidden="true"></div>
+    </div>
+
+    <!-- Application Wrapper -->
+    <div class="nexus-app" id="app">
+
+        <!-- Command Navigation -->
+        <header class="nexus-header" role="banner">
+            <div class="header-inner">
+                <div class="brand-group">
+                    <div class="core-symbol" aria-hidden="true">
+                        <svg viewBox="0 0 40 40" class="symbol-svg">
+                            <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" class="hex-outer" />
+                            <polygon points="20,8 32,15 32,25 20,32 8,25 8,15" class="hex-inner" />
+                            <circle cx="20" cy="20" r="4" class="core-dot" />
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1 class="brand-title">NEXUS<span class="highlight">VAULT</span></h1>
+                        <span class="brand-tag">PERSONAL SECURITY INFRASTRUCTURE</span>
+                    </div>
+                </div>
+
+                <div class="nav-telemetry" id="nav-telemetry">
+                    <div class="status-pill status-tls">
+                        <span class="status-indicator live"></span>
+                        <span class="status-text">SECURE LINK</span>
+                    </div>
+                    <div class="status-pill status-core">
+                        <span class="status-indicator" id="core-status-dot"></span>
+                        <span class="status-text" id="core-status-text">CORE // OFFLINE</span>
+                    </div>
+                </div>
+
+                <div class="nav-controls hidden" id="user-controls">
+                    <div class="user-badge">
+                        <span class="user-label">OPERATOR //</span>
+                        <span class="user-id" id="nav-username">---</span>
+                    </div>
+                    <button type="button" id="lock-vault-btn" class="btn btn-lock" title="Purge cryptographic keys from memory">
+                        <svg class="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-width="2"/>
+                        </svg>
+                        <span>LOCK VAULT</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Viewport -->
+        <main class="nexus-main">
+
+            <!-- VIEW 1: AUTHENTICATION / ACCESS TERMINAL -->
+            <section id="auth-screen" class="view-panel active-panel" aria-labelledby="auth-heading">
+                <div class="auth-terminal-frame">
+                    
+                    <!-- Circular Secure Core Graphic -->
+                    <div class="terminal-core-container">
+                        <div class="core-radial-ring ring-outer"></div>
+                        <div class="core-radial-ring ring-mid"></div>
+                        <div class="core-radial-ring ring-inner"></div>
+                        <div class="core-center-node">
+                            <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="12" cy="11" r="3" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="terminal-header">
+                        <div class="terminal-state-tag" id="auth-state-tag">SECURE CORE // OFFLINE</div>
+                        <h2 id="auth-heading" class="terminal-title">IDENTITY VERIFICATION REQUIRED</h2>
+                        <p class="terminal-desc" id="auth-desc">Zero-knowledge cryptographic initialization. Master key never traverses the wire.</p>
+                    </div>
+
+                    <!-- Auth Form -->
+                    <form id="auth-form" class="cyber-form" novalidate>
+                        <div class="input-block">
+                            <label for="username" class="console-label">
+                                <span class="label-prefix">&gt;</span> IDENTITY IDENTIFIER
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="username" class="console-input" required autocomplete="username" spellcheck="false" placeholder="operator_uid">
+                                <span class="input-glow"></span>
+                            </div>
+                        </div>
+
+                        <div class="input-block">
+                            <label for="master-password" class="console-label">
+                                <span class="label-prefix">&gt;</span> ENTER MASTER KEY
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" id="master-password" class="console-input" required autocomplete="current-password" placeholder="••••••••••••••••">
+                                <button type="button" id="toggle-master-pw" class="btn-input-accessory" aria-label="Toggle master key visibility">
+                                    <span class="accessory-icon" id="pw-eye-icon">◉</span>
+                                </button>
+                                <span class="input-glow"></span>
+                            </div>
+
+                            <!-- Master Key Password Strength Meter (Least / Average / Best) -->
+                            <div class="strength-meter-wrap" id="auth-strength-wrap">
+                                <div class="strength-bars">
+                                    <span class="strength-segment" id="auth-seg-1"></span>
+                                    <span class="strength-segment" id="auth-seg-2"></span>
+                                    <span class="strength-segment" id="auth-seg-3"></span>
+                                    <span class="strength-segment" id="auth-seg-4"></span>
+                                </div>
+                                <span class="strength-readout" id="auth-strength-readout">STRENGTH: ENTER KEY</span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-cyber-large">
+                                <span class="btn-text">INITIALIZE VAULT</span>
+                                <span class="btn-flare"></span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="terminal-footer">
+                        <button type="button" id="auth-toggle-btn" class="btn-text-link">
+                            <span class="link-bracket">[</span>
+                            <span class="link-label" id="auth-toggle-label">MODE: REGISTER NEW IDENTITY</span>
+                            <span class="link-bracket">]</span>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- VIEW 2: MAIN COMMAND CENTER (VAULT) -->
+            <section id="vault-screen" class="view-panel hidden-panel" aria-labelledby="vault-heading">
+                
+                <!-- Central Security Core & Telemetry HUD -->
+                <div class="command-hud">
+                    <div class="hud-core-card">
+                        <div class="hud-ring-wrapper">
+                            <div class="hud-spin-ring"></div>
+                            <div class="hud-core-number" id="vault-counter">00</div>
+                            <div class="hud-core-sub">SECRETS</div>
+                        </div>
+                        <div class="hud-core-data">
+                            <div class="hud-tag">SECURE DIGITAL CORE</div>
+                            <h2 id="vault-heading" class="hud-title">ENCRYPTED STORAGE MATRIX</h2>
+                            <div class="integrity-bar-wrap">
+                                <div class="integrity-labels">
+                                    <span>VAULT INTEGRITY</span>
+                                    <span class="integrity-pct">100% PROTECTED</span>
+                                </div>
+                                <div class="integrity-track">
+                                    <div class="integrity-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clean Operational Stats Grid -->
+                    <div class="hud-stats-grid">
+                        <div class="stat-cell">
+                            <div class="stat-code">VAULT_STATUS</div>
+                            <div class="stat-value" id="vault-status-indicator">UNLOCKED</div>
+                            <div class="stat-note">ACTIVE SESSION</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-code">SECURITY_HEALTH</div>
+                            <div class="stat-value">OPTIMAL</div>
+                            <div class="stat-note">ZERO CONFLICTS</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-code">AUTO_LOCK</div>
+                            <div class="stat-value" id="lock-countdown">15:00</div>
+                            <div class="stat-note">REMAINING IDLE TIME</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-code">STORAGE_SYNC</div>
+                            <div class="stat-value">CONNECTED</div>
+                            <div class="stat-note">CLOUD SYNCHRONIZED</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vault Operational Toolbar -->
+                <div class="vault-toolbar">
+                    <div class="search-capsule">
+                        <span class="search-icon">&gt;</span>
+                        <input type="text" id="vault-search-input" class="search-input" placeholder="QUERY ENCRYPTED CAPSULES..." aria-label="Search encrypted secrets">
+                    </div>
+                    <div class="toolbar-actions">
+                        <button type="button" id="open-create-modal-btn" class="btn btn-primary">
+                            <span class="btn-icon">+</span>
+                            <span>CREATE SECRET</span>
+                        </button>
+                        <button type="button" id="open-generator-modal-btn" class="btn btn-secondary">
+                            <span class="btn-icon">⚡</span>
+                            <span>GENERATOR CORE</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Encrypted Capsules Grid -->
+                <div class="capsules-wrapper">
+                    <div class="capsules-header">
+                        <div class="col-title">CAPSULE IDENTIFIER</div>
+                        <div class="col-user">IDENTITY STORED</div>
+                        <div class="col-cipher">PAYLOAD STATUS</div>
+                        <div class="col-actions">DIRECT COMMANDS</div>
+                    </div>
+                    <div id="vault-capsules-list" class="capsules-grid" role="list">
+                        <!-- Populated dynamically via safe DOM APIs -->
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- SECURE STATUS FOOTER -->
+        <footer class="nexus-footer">
+            <div class="footer-inner">
+                <div class="security-declaration">
+                    <span class="badge-dot"></span>
+                    <span>NEXUS VAULT // ALL SYSTEMS OPERATIONAL</span>
+                </div>
+                <div class="system-time" id="system-time">
+                    TIME_STAMP // 2035.04.10 // 00:00:00 UTC
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- MODAL 1: CREATE SECRET CAPSULE -->
+    <div id="create-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
+        <div class="cyber-modal-window">
+            <div class="modal-corner c-top-left"></div>
+            <div class="modal-corner c-top-right"></div>
+            <div class="modal-corner c-bottom-left"></div>
+            <div class="modal-corner c-bottom-right"></div>
+
+            <div class="modal-header">
+                <div class="modal-tag">ENCRYPTED OBJECT CREATION</div>
+                <h3 id="create-modal-title" class="modal-title">INITIALIZE NEW SECRET CAPSULE</h3>
+            </div>
+
+            <form id="create-secret-form" class="cyber-form">
+                <div class="input-block">
+                    <label for="capsule-title" class="console-label">&gt; SERVICE / TARGET SYSTEM</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="capsule-title" class="console-input" required placeholder="e.g. ProtonMail, GitHub Enterprise, AWS Core">
+                        <span class="input-glow"></span>
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label for="capsule-username" class="console-label">&gt; USERNAME / STORED IDENTITY</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="capsule-username" class="console-input" required placeholder="operator@nexus.internal">
+                        <span class="input-glow"></span>
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <div class="label-with-tool">
+                        <label for="capsule-password" class="console-label">&gt; SECRET KEY / PASSWORD</label>
+                        <button type="button" id="quick-gen-btn" class="link-tool">USE GENERATOR CORE</button>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="password" id="capsule-password" class="console-input" required placeholder="••••••••••••••••">
+                        <button type="button" id="toggle-capsule-pw" class="btn-input-accessory" aria-label="Toggle password visibility">
+                            <span>◉</span>
+                        </button>
+                        <span class="input-glow"></span>
+                    </div>
+                    
+                    <!-- Password Strength Meter (Least / Average / Best) -->
+                    <div class="strength-meter-wrap" id="strength-meter-wrap">
+                        <div class="strength-bars">
+                            <span class="strength-segment" id="seg-1"></span>
+                            <span class="strength-segment" id="seg-2"></span>
+                            <span class="strength-segment" id="seg-3"></span>
+                            <span class="strength-segment" id="seg-4"></span>
+                        </div>
+                        <span class="strength-readout" id="strength-readout">STRENGTH: ENTER PASSWORD</span>
+                    </div>
+                </div>
+
+                <!-- Real-time Encryption Pipeline Status -->
+                <div class="pipeline-status hidden" id="creation-pipeline">
+                    <div class="pipeline-step" id="pipe-1">1. Initializing secure capsule...</div>
+                    <div class="pipeline-step" id="pipe-2">2. Encrypting secret payload...</div>
+                    <div class="pipeline-step" id="pipe-3">3. Committing to vault storage...</div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancel-create-btn" class="btn btn-secondary">ABORT</button>
+                    <button type="submit" id="save-secret-btn" class="btn btn-primary">
+                        <span>COMMIT ENCRYPTED CAPSULE</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CRYPTOGRAPHIC GENERATOR CORE -->
+    <div id="generator-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="gen-modal-title">
+        <div class="cyber-modal-window">
+            <div class="modal-corner c-top-left"></div>
+            <div class="modal-corner c-top-right"></div>
+            <div class="modal-corner c-bottom-left"></div>
+            <div class="modal-corner c-bottom-right"></div>
+
+            <div class="modal-header">
+                <div class="modal-tag">PASSWORD GENERATOR</div>
+                <h3 id="gen-modal-title" class="modal-title">SECURE GENERATOR CORE</h3>
+            </div>
+
+            <div class="generator-output-box">
+                <div class="gen-output-header">
+                    <span>GENERATED SECRET</span>
+                    <span id="gen-entropy-bits">OPTIMAL</span>
+                </div>
+                <div class="gen-stream-container">
+                    <div id="gen-output-text" class="gen-text-display">--------------------</div>
+                </div>
+            </div>
+
+            <!-- Generator Controls -->
+            <div class="generator-controls">
+                <div class="control-row">
+                    <div class="slider-label">
+                        <span>CAPSULE LENGTH:</span>
+                        <span id="gen-length-val" class="highlight-val">20 CHARS</span>
+                    </div>
+                    <input type="range" id="gen-length-slider" min="12" max="64" value="20" class="cyber-slider">
+                </div>
+
+                <div class="toggle-chips-grid">
+                    <label class="cyber-chip">
+                        <input type="checkbox" id="gen-opt-upper" checked>
+                        <span class="chip-box"></span>
+                        <span class="chip-text">UPPERCASE (A-Z)</span>
+                    </label>
+                    <label class="cyber-chip">
+                        <input type="checkbox" id="gen-opt-lower" checked>
+                        <span class="chip-box"></span>
+                        <span class="chip-text">LOWERCASE (a-z)</span>
+                    </label>
+                    <label class="cyber-chip">
+                        <input type="checkbox" id="gen-opt-numbers" checked>
+                        <span class="chip-box"></span>
+                        <span class="chip-text">NUMERICS (0-9)</span>
+                    </label>
+                    <label class="cyber-chip">
+                        <input type="checkbox" id="gen-opt-symbols" checked>
+                        <span class="chip-box"></span>
+                        <span class="chip-text">SYMBOLS (!@#$)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="regen-btn" class="btn btn-secondary">
+                    <span>REGENERATE ENTROPY</span>
+                </button>
+                <button type="button" id="copy-generated-btn" class="btn btn-primary">
+                    <span>COPY SECRET</span>
+                </button>
+                <button type="button" id="apply-to-create-btn" class="btn btn-accent hidden">
+                    <span>INJECT INTO CAPSULE</span>
+                </button>
+                <button type="button" id="close-gen-btn" class="btn btn-secondary">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CINEMATIC SECURITY SEQUENCE OVERLAY -->
+    <div id="cinematic-overlay" class="cinematic-overlay hidden" aria-live="assertive">
+        <div class="cinematic-core">
+            <div class="cinematic-pulse-ring"></div>
+            <div class="cinematic-shield">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <div class="cinematic-telemetry">
+                <div class="telemetry-step" id="seq-step-1">&gt; VERIFYING OPERATOR IDENTITY...</div>
+                <div class="telemetry-step" id="seq-step-2">&gt; VALIDATING MASTER KEY DERIVATION...</div>
+                <div class="telemetry-step" id="seq-step-3">&gt; INITIALIZING CRYPTOGRAPHIC CORE...</div>
+                <div class="telemetry-step" id="seq-step-4">&gt; LOADING ENCRYPTED CAPSULE STORAGE...</div>
+                <div class="telemetry-step" id="seq-step-5">&gt; VAULT INTEGRITY VERIFIED (100%)...</div>
+                <div class="telemetry-step success-step" id="seq-step-6">&gt; ACCESS GRANTED // WELCOME</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURE TOAST NOTIFICATION HUD -->
+    <div id="nexus-toast" class="cyber-toast" role="status" aria-live="polite">
+        <div class="toast-indicator"></div>
+        <div class="toast-content">
+            <div class="toast-system-id">SYSTEM_LOG //</div>
+            <div class="toast-body" id="toast-message">READY</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

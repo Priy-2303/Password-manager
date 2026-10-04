@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment Variables & Secrets (CRITICAL: NEVER COMMIT)
+.env
+.env.local
+*.env
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Logs & Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
