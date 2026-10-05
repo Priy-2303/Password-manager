@@ -1,35 +1,15 @@
-/**
- * NEXUS VAULT // PERSONAL SECURITY INFRASTRUCTURE
- * Zero-Knowledge Cryptographic Core & Client Controller
- */
-
 'use strict';
-
-// ============================================================================
-// 1. STATE & ZERO-KNOWLEDGE CRYPTO STORE
-// ============================================================================
 
 let isRegisterMode = false;
 let currentUser = null;
-
-// The cryptographic key lives EXCLUSIVELY in volatile memory.
-// Never written to localStorage, sessionStorage, or indexedDB.
 let encryptionKey = null;
 
-// Inactivity Timer State (15 minutes)
 const INACTIVITY_LIMIT_SECONDS = 15 * 60;
 let remainingInactivitySeconds = INACTIVITY_LIMIT_SECONDS;
 let inactivityTimerInterval = null;
 
-// Store loaded vault items in memory for fast search & filtering
 let cachedVaultItems = [];
-
-// Track active decryption timers to cleanly re-mask exposed credentials
 const activeRevealTimers = new Map();
-
-// ============================================================================
-// 2. AMBIENT MATRIX CANVAS (GPU-FRIENDLY PARTICLES)
-// ============================================================================
 
 function initAmbientBackground() {
     const canvas = document.getElementById('ambient-canvas');
@@ -45,7 +25,6 @@ function initAmbientBackground() {
         height = canvas.height = window.innerHeight;
     }, { passive: true });
 
-    // Subtle ambient dust nodes
     const particleCount = Math.min(Math.floor(width / 32), 40);
     const particles = [];
 
@@ -69,8 +48,6 @@ function initAmbientBackground() {
         }
 
         ctx.clearRect(0, 0, width, height);
-
-        // Draw faint connective node lines
         ctx.strokeStyle = 'rgba(0, 242, 254, 0.04)';
         ctx.lineWidth = 1;
 
@@ -89,7 +66,6 @@ function initAmbientBackground() {
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();
 
-            // Connect nearby nodes
             for (let j = i + 1; j < particles.length; j++) {
                 const p2 = particles[j];
                 const dx = p.x - p2.x;
@@ -111,20 +87,13 @@ function initAmbientBackground() {
     renderAmbient();
 }
 
-// ============================================================================
-// 3. CRYPTOGRAPHIC CORE (ZERO-KNOWLEDGE PBKDF2 & AES-256-GCM)
-// ============================================================================
-
-/**
- * Derives 512 bits from Master Password:
- * - 256 bits -> AES-256-GCM Vault Key (Non-extractable, client-only)
- * - 256 bits -> Client Auth Hash (Sent to server over TLS for verification)
- */
 async function deriveCryptographicKeys(masterPassword, saltHex) {
     const enc = new TextEncoder();
-    const saltBytes = new Uint8Array(saltHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    const safeSalt = (saltHex && typeof saltHex === 'string' && saltHex.length >= 16)
+        ? saltHex
+        : 'a7c93e4f8b2d1065e8a93b4d1c7e2f50';
+    const saltBytes = new Uint8Array(safeSalt.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
-    // Import master key as PBKDF2 key material
     const baseKey = await window.crypto.subtle.importKey(
         'raw',
         enc.encode(masterPassword),
@@ -133,7 +102,6 @@ async function deriveCryptographicKeys(masterPassword, saltHex) {
         ['deriveBits', 'deriveKey']
     );
 
-    // 600,000 rounds of PBKDF2-HMAC-SHA256
     const derivedBits = await window.crypto.subtle.deriveBits(
         {
             name: 'PBKDF2',
@@ -148,7 +116,6 @@ async function deriveCryptographicKeys(masterPassword, saltHex) {
     const encKeyBits = derivedBits.slice(0, 32);
     const authKeyBits = derivedBits.slice(32, 64);
 
-    // Import vault key with extractable = false to protect against memory export
     const encKey = await window.crypto.subtle.importKey(
         'raw',
         encKeyBits,
@@ -157,25 +124,18 @@ async function deriveCryptographicKeys(masterPassword, saltHex) {
         ['encrypt', 'decrypt']
     );
 
-    // Format client auth key as lowercase hex
     const authArray = Array.from(new Uint8Array(authKeyBits));
     const clientAuthHash = authArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     return { encKey, clientAuthHash };
 }
 
-/**
- * Generate 16-byte cryptographically secure random salt in hex
- */
 function generateSecureSalt() {
     const arr = new Uint8Array(16);
     window.crypto.getRandomValues(arr);
     return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-/**
- * Encrypt arbitrary JSON object with AES-GCM and unique 12-byte IV
- */
 async function encryptSecretPayload(payload, key) {
     const enc = new TextEncoder();
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -185,7 +145,6 @@ async function encryptSecretPayload(payload, key) {
         enc.encode(JSON.stringify(payload))
     );
 
-    // Prepend 12-byte IV to ciphertext
     const combined = new Uint8Array(iv.length + new Uint8Array(encrypted).length);
     combined.set(iv);
     combined.set(new Uint8Array(encrypted), iv.length);
@@ -193,9 +152,6 @@ async function encryptSecretPayload(payload, key) {
     return btoa(String.fromCharCode(...combined));
 }
 
-/**
- * Decrypt ciphertext bundle using AES-GCM
- */
 async function decryptSecretPayload(combinedBase64, key) {
     try {
         const combined = Uint8Array.from(atob(combinedBase64), c => c.charCodeAt(0));
@@ -214,9 +170,6 @@ async function decryptSecretPayload(combinedBase64, key) {
     }
 }
 
-/**
- * Web Crypto CSPRNG Password Generator
- */
 function generateCryptographicPassword(length = 20, opts = { upper: true, lower: true, numbers: true, symbols: true }) {
     let charset = '';
     if (opts.upper) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -235,10 +188,6 @@ function generateCryptographicPassword(length = 20, opts = { upper: true, lower:
     }
     return result;
 }
-
-// ============================================================================
-// 4. INACTIVITY TIMEOUT & AUTO CRYO-LOCK
-// ============================================================================
 
 function resetInactivityTimer() {
     remainingInactivitySeconds = INACTIVITY_LIMIT_SECONDS;
@@ -271,16 +220,11 @@ function startInactivityDaemon() {
     }, 1000);
 }
 
-// Track user interactions
 ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
     window.addEventListener(evt, () => {
         if (encryptionKey) resetInactivityTimer();
     }, { passive: true });
 });
-
-// ============================================================================
-// 5. CINEMATIC LOGIN SEQUENCE
-// ============================================================================
 
 async function playCinematicUnlockSequence() {
     const overlay = document.getElementById('cinematic-overlay');
@@ -295,7 +239,6 @@ async function playCinematicUnlockSequence() {
         document.getElementById('seq-step-6')
     ];
 
-    // Reset steps
     steps.forEach(s => s.classList.remove('active'));
 
     for (let i = 0; i < steps.length; i++) {
@@ -306,10 +249,6 @@ async function playCinematicUnlockSequence() {
     await new Promise(r => setTimeout(r, 280));
     overlay.classList.add('hidden');
 }
-
-// ============================================================================
-// 6. UI HUD TOAST SYSTEM
-// ============================================================================
 
 let toastTimeout;
 function showToast(message, isError = false) {
@@ -324,10 +263,6 @@ function showToast(message, isError = false) {
         toast.className = 'cyber-toast';
     }, 3800);
 }
-
-// ============================================================================
-// 7. AUTHENTICATION & SESSION MANAGEMENT
-// ============================================================================
 
 function toggleAuthMode() {
     isRegisterMode = !isRegisterMode;
@@ -376,7 +311,6 @@ async function handleAuthentication(e) {
             salt = saltData.salt;
         }
 
-        // Derive client keys
         const { encKey, clientAuthHash } = await deriveCryptographicKeys(masterPassword, salt);
 
         const endpoint = isRegisterMode ? '/api/register' : '/api/login';
@@ -393,17 +327,11 @@ async function handleAuthentication(e) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Authentication rejected by security core.');
 
-        // Save session state in volatile memory only
         currentUser = { id: data.userId, username: data.username };
         encryptionKey = encKey;
 
-        // Reset sensitive DOM fields
         document.getElementById('auth-form').reset();
-
-        // Play futuristic unlock animation
         await playCinematicUnlockSequence();
-
-        // Switch to Vault Command Center
         transitionToVaultView();
 
         showToast(isRegisterMode ? 'Digital Vault Core generated and unlocked.' : 'Access granted. Welcome, Operator.');
@@ -429,27 +357,22 @@ function transitionToVaultView() {
 }
 
 async function executeVaultLock(message = 'ENCRYPTED SESSION TERMINATED') {
-    // 1. Wipe cryptographic keys from memory
     encryptionKey = null;
     currentUser = null;
     cachedVaultItems = [];
     clearInterval(inactivityTimerInterval);
 
-    // Cancel all active reveal timers
     activeRevealTimers.forEach(timer => clearTimeout(timer));
     activeRevealTimers.clear();
 
-    // 2. Invalidate server cookie
     try {
         await fetch('/api/logout', { method: 'POST' });
     } catch (_) {}
 
-    // 3. Clear sensitive DOM structures
     document.getElementById('vault-capsules-list').innerHTML = '';
     document.getElementById('vault-counter').textContent = '00';
     document.getElementById('vault-search-input').value = '';
 
-    // 4. Return to Auth Terminal
     document.getElementById('vault-screen').classList.add('hidden-panel');
     document.getElementById('auth-screen').classList.remove('hidden-panel');
     document.getElementById('user-controls').classList.add('hidden');
@@ -457,16 +380,11 @@ async function executeVaultLock(message = 'ENCRYPTED SESSION TERMINATED') {
     document.getElementById('core-status-dot').className = 'status-indicator';
     document.getElementById('core-status-text').textContent = 'CORE // OFFLINE';
 
-    // Close any open modals
     closeCreateModal();
     closeGeneratorModal();
 
     showToast(message);
 }
-
-// ============================================================================
-// 8. VAULT CAPSULES (SAFE DOM RENDERING & ZERO INNERHTML)
-// ============================================================================
 
 async function loadVaultCapsules() {
     try {
@@ -484,7 +402,6 @@ function renderFilteredCapsules(items) {
     const listEl = document.getElementById('vault-capsules-list');
     listEl.innerHTML = '';
 
-    // Update HUD capsule counter with leading zero
     const countFormatted = items.length < 10 ? `0${items.length}` : `${items.length}`;
     document.getElementById('vault-counter').textContent = countFormatted;
 
@@ -512,16 +429,12 @@ function renderFilteredCapsules(items) {
     });
 }
 
-/**
- * Builds Encrypted Capsule entirely with safe DOM APIs
- */
 function createCapsuleDOMElement(item) {
     const row = document.createElement('div');
     row.className = 'capsule-item';
     row.setAttribute('role', 'listitem');
     row.dataset.id = item.id;
 
-    // --- Col 1: Identifier & Monogram ---
     const colId = document.createElement('div');
     colId.className = 'capsule-identifier';
 
@@ -534,7 +447,7 @@ function createCapsuleDOMElement(item) {
 
     const title = document.createElement('span');
     title.className = 'capsule-title';
-    title.textContent = item.title; // Safe textContent
+    title.textContent = item.title;
 
     const time = document.createElement('span');
     time.className = 'capsule-time';
@@ -546,12 +459,10 @@ function createCapsuleDOMElement(item) {
     colId.appendChild(avatar);
     colId.appendChild(names);
 
-    // --- Col 2: Identity Stored ---
     const colUser = document.createElement('div');
     colUser.className = 'capsule-identity';
-    colUser.textContent = 'ENCRYPTED'; // Initially masked until decrypted
+    colUser.textContent = 'ENCRYPTED';
 
-    // --- Col 3: Ciphertext & Dots ---
     const colCipher = document.createElement('div');
     colCipher.className = 'capsule-cipher';
 
@@ -566,34 +477,28 @@ function createCapsuleDOMElement(item) {
     colCipher.appendChild(dots);
     colCipher.appendChild(badge);
 
-    // --- Col 4: Action Commands ---
     const colActions = document.createElement('div');
     colActions.className = 'capsule-actions';
 
-    // ACCESS / REVEAL Button
     const accessBtn = document.createElement('button');
     accessBtn.type = 'button';
     accessBtn.className = 'btn btn-secondary btn-action';
     accessBtn.textContent = 'ACCESS';
 
-    // COPY Button
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
     copyBtn.className = 'btn btn-primary btn-action';
     copyBtn.textContent = 'COPY';
 
-    // PURGE Button
     const purgeBtn = document.createElement('button');
     purgeBtn.type = 'button';
     purgeBtn.className = 'btn btn-purge';
     purgeBtn.title = 'Purge capsule';
     purgeBtn.textContent = '✕';
 
-    // Event Listener: ACCESS (Decrypt on Demand + 10s auto-lock timer)
     accessBtn.addEventListener('click', async () => {
         if (!encryptionKey) return;
 
-        // If already revealed, re-lock immediately
         if (activeRevealTimers.has(item.id)) {
             clearTimeout(activeRevealTimers.get(item.id));
             activeRevealTimers.delete(item.id);
@@ -644,7 +549,6 @@ function createCapsuleDOMElement(item) {
         }
     });
 
-    // Event Listener: COPY (Clipboard write + 45s clipboard wiper)
     copyBtn.addEventListener('click', async () => {
         if (!encryptionKey) return;
 
@@ -653,7 +557,6 @@ function createCapsuleDOMElement(item) {
             await navigator.clipboard.writeText(decrypted.password);
             showToast(`Secret for "${item.title}" copied to clipboard.`);
 
-            // Clipboard Wiper Daemon: Automatically wipes the clipboard after 45s
             setTimeout(async () => {
                 try {
                     const currentClip = await navigator.clipboard.readText();
@@ -669,7 +572,6 @@ function createCapsuleDOMElement(item) {
         }
     });
 
-    // Event Listener: PURGE (Delete)
     purgeBtn.addEventListener('click', async () => {
         if (!confirm(`Purge encrypted capsule "${item.title}" from storage?`)) return;
 
@@ -697,7 +599,6 @@ function createCapsuleDOMElement(item) {
     return row;
 }
 
-// Search & Filter
 function filterCapsules(query) {
     const q = query.toLowerCase().trim();
     if (!q) {
@@ -707,10 +608,6 @@ function filterCapsules(query) {
     const filtered = cachedVaultItems.filter(item => item.title.toLowerCase().includes(q));
     renderFilteredCapsules(filtered);
 }
-
-// ============================================================================
-// 9. CREATE SECRET CAPSULE
-// ============================================================================
 
 function openCreateModal() {
     document.getElementById('create-modal').classList.remove('hidden');
@@ -730,10 +627,6 @@ function resetStrengthMeter() {
     document.getElementById('strength-readout').textContent = 'STRENGTH: ENTER PASSWORD';
 }
 
-/**
- * Universal Password Quality Evaluator
- * Evaluates passwords into 4 distinct tiers: LEAST, AVERAGE, GOOD, BEST
- */
 function evaluatePasswordQuality(password, segs, readoutEl, defaultText = 'ENTER PASSWORD') {
     segs.forEach(s => s.className = 'strength-segment');
 
@@ -793,14 +686,12 @@ async function handleSaveCapsule(e) {
         p1.className = 'pipeline-step done';
         p2.className = 'pipeline-step active';
 
-        // 1. Encrypt payload with AES-GCM
         const encryptedData = await encryptSecretPayload({ username, password }, encryptionKey);
 
         await new Promise(r => setTimeout(r, 150));
         p2.className = 'pipeline-step done';
         p3.className = 'pipeline-step active';
 
-        // 2. Send ciphertext to server
         const res = await fetch('/api/vault', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -821,10 +712,6 @@ async function handleSaveCapsule(e) {
         pipeline.classList.add('hidden');
     }
 }
-
-// ============================================================================
-// 10. CRYPTOGRAPHIC GENERATOR CORE MODAL
-// ============================================================================
 
 function openGeneratorModal() {
     document.getElementById('generator-modal').classList.remove('hidden');
@@ -847,15 +734,9 @@ function refreshGeneratedSecret() {
     document.getElementById('gen-entropy-bits').textContent = 'OPTIMAL';
 }
 
-// ============================================================================
-// 11. INITIALIZATION & DOM EVENT BINDINGS
-// ============================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Canvas Background
     initAmbientBackground();
 
-    // 2. Real-time UTC clock in footer
     const timeEl = document.getElementById('system-time');
     function updateClock() {
         const now = new Date();
@@ -864,34 +745,28 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 3. Auth Form Event Listeners
     document.getElementById('auth-form').addEventListener('submit', handleAuthentication);
     document.getElementById('auth-toggle-btn').addEventListener('click', toggleAuthMode);
 
-    // Live Password Strength Analyzer on Login / Register Master Key
     const authSegs = [1, 2, 3, 4].map(n => document.getElementById(`auth-seg-${n}`));
     const authReadout = document.getElementById('auth-strength-readout');
     document.getElementById('master-password').addEventListener('input', (e) => {
         evaluatePasswordQuality(e.target.value, authSegs, authReadout, 'ENTER MASTER KEY');
     });
 
-    // Toggle master password visibility
     document.getElementById('toggle-master-pw').addEventListener('click', () => {
         const input = document.getElementById('master-password');
         input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    // 4. Lock Vault Command
     document.getElementById('lock-vault-btn').addEventListener('click', () => {
         executeVaultLock('ENCRYPTED SESSION TERMINATED: Keys purged from memory.');
     });
 
-    // 5. Search Bar Listener
     document.getElementById('vault-search-input').addEventListener('input', (e) => {
         filterCapsules(e.target.value);
     });
 
-    // 6. Create Secret Modal Listeners
     document.getElementById('open-create-modal-btn').addEventListener('click', openCreateModal);
     document.getElementById('cancel-create-btn').addEventListener('click', closeCreateModal);
     document.getElementById('create-secret-form').addEventListener('submit', handleSaveCapsule);
@@ -916,7 +791,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Generated strong password populated.');
     });
 
-    // 7. Generator Core Modal Listeners
     document.getElementById('open-generator-modal-btn').addEventListener('click', openGeneratorModal);
     document.getElementById('close-gen-btn').addEventListener('click', closeGeneratorModal);
     document.getElementById('regen-btn').addEventListener('click', refreshGeneratedSecret);
@@ -937,9 +811,25 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Secret copied to clipboard.');
     });
 
-    // Close modals on clicking backdrop
     window.addEventListener('click', (e) => {
         if (e.target.id === 'create-modal') closeCreateModal();
         if (e.target.id === 'generator-modal') closeGeneratorModal();
+    });
+
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            return false;
+        }
     });
 });
