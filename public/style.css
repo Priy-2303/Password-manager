@@ -357,6 +357,19 @@ button, input, select, textarea {
     height: 14px;
 }
 
+.btn-panic {
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #e2e8f0;
+}
+
+.btn-panic:hover {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: var(--violet-glow);
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.35);
+}
+
 .btn-cyber-large {
     width: 100%;
     padding: 14px;
@@ -1116,6 +1129,103 @@ button, input, select, textarea {
     font-size: 1.125rem;
     font-weight: 700;
     color: #ffffff;
+}
+
+.modal-intro {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 20px;
+}
+
+.duress-status-card {
+    background: rgba(6, 8, 12, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.duress-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.duress-status-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.duress-status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: var(--radius-capsule);
+}
+
+.duress-status-badge.inactive {
+    background: rgba(244, 63, 94, 0.12);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.duress-status-badge.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.duress-status-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+.decoy-preview-box {
+    background: rgba(6, 8, 12, 0.7);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+}
+
+.decoy-preview-header {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-glow);
+    margin-bottom: 8px;
+}
+
+.decoy-items-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.decoy-items-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+}
+
+.decoy-tag {
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
 }
 
 .modal-footer {

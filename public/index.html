@@ -212,6 +212,10 @@
                             <span class="btn-icon">⚡</span>
                             <span>GENERATOR CORE</span>
                         </button>
+                        <button type="button" id="open-panic-modal-btn" class="btn btn-panic" title="Configure duress panic key and decoy vault">
+                            <span class="btn-icon">🛡️</span>
+                            <span>PANIC DURESS</span>
+                        </button>
                     </div>
                 </div>
 
@@ -270,7 +274,10 @@
                 </div>
 
                 <div class="input-block">
-                    <label for="capsule-username" class="console-label">&gt; USERNAME / STORED IDENTITY</label>
+                    <div class="label-with-tool">
+                        <label for="capsule-username" class="console-label">&gt; USERNAME / STORED IDENTITY</label>
+                        <button type="button" id="quick-combo-btn" class="link-tool">⚡ DISPOSABLE COMBO</button>
+                    </div>
                     <div class="input-wrapper">
                         <input type="text" id="capsule-username" class="console-input" required placeholder="operator@nexus.internal">
                         <span class="input-glow"></span>
@@ -388,6 +395,78 @@
                 </button>
                 <button type="button" id="close-gen-btn" class="btn btn-secondary">CLOSE</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: DURESS & PANIC VAULT CONFIGURATION -->
+    <div id="panic-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="panic-modal-title">
+        <div class="cyber-modal-window">
+            <div class="modal-corner c-top-left"></div>
+            <div class="modal-corner c-top-right"></div>
+            <div class="modal-corner c-bottom-left"></div>
+            <div class="modal-corner c-bottom-right"></div>
+
+            <div class="modal-header">
+                <div class="modal-tag">PLAUSIBLE DENIABILITY PROTOCOL</div>
+                <h3 id="panic-modal-title" class="modal-title">DURESS &amp; DECOY VAULT</h3>
+            </div>
+
+            <p class="modal-intro">
+                Configure an alternate Panic Master Key. If coerced to unlock your vault, enter this key at the login terminal. It will unlock a realistic decoy vault containing dummy accounts. Your real vault remains cryptographically isolated and invisible.
+            </p>
+
+            <form id="panic-config-form" class="cyber-form">
+                <div class="duress-status-card">
+                    <div class="duress-status-header">
+                        <span class="duress-status-label">PROTOCOL STATUS:</span>
+                        <span id="panic-status-indicator" class="duress-status-badge inactive">UNARMED</span>
+                    </div>
+                    <div class="duress-status-desc" id="panic-status-desc">
+                        No Panic Master Key configured. Entering an invalid key at login will be rejected normally.
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label for="panic-key-input" class="console-label">&gt; PANIC MASTER KEY</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="panic-key-input" class="console-input" placeholder="Enter alternate panic key" autocomplete="off">
+                        <button type="button" id="toggle-panic-pw" class="btn-input-accessory" aria-label="Toggle panic key visibility">
+                            <span>◉</span>
+                        </button>
+                        <span class="input-glow"></span>
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label for="panic-key-confirm" class="console-label">&gt; CONFIRM PANIC MASTER KEY</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="panic-key-confirm" class="console-input" placeholder="Repeat panic key" autocomplete="off">
+                        <span class="input-glow"></span>
+                    </div>
+                </div>
+
+                <div class="decoy-preview-box">
+                    <div class="decoy-preview-header">
+                        <span>DECOY VAULT INVENTORY (6 AUTHENTIC ITEMS)</span>
+                    </div>
+                    <ul class="decoy-items-list" id="decoy-items-list">
+                        <li><span>Netflix Premium</span> <span class="decoy-tag">STREAMING</span></li>
+                        <li><span>Amazon Prime</span> <span class="decoy-tag">ECOMMERCE</span></li>
+                        <li><span>Spotify Family</span> <span class="decoy-tag">MEDIA</span></li>
+                        <li><span>Instagram Creator</span> <span class="decoy-tag">SOCIAL</span></li>
+                        <li><span>Proton Decoy Mail</span> <span class="decoy-tag">COMMUNICATION</span></li>
+                        <li><span>Steam Gaming Hub</span> <span class="decoy-tag">GAMING</span></li>
+                    </ul>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="disarm-panic-btn" class="btn btn-secondary hidden">DISARM PROTOCOL</button>
+                    <button type="button" id="close-panic-btn" class="btn btn-secondary">CANCEL</button>
+                    <button type="submit" id="save-panic-btn" class="btn btn-primary">
+                        <span>ARM DURESS PROTOCOL</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
