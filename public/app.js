@@ -129,7 +129,10 @@ function initAmbientBackground() {
 
 async function deriveCryptographicKeys(masterPassword, saltHex) {
     const enc = new TextEncoder();
-    const saltBytes = new Uint8Array(saltHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    const safeSalt = (saltHex && typeof saltHex === 'string' && saltHex.length >= 16)
+        ? saltHex
+        : 'a7c93e4f8b2d1065e8a93b4d1c7e2f50';
+    const saltBytes = new Uint8Array(safeSalt.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
     const baseKey = await window.crypto.subtle.importKey(
         'raw',
@@ -1066,5 +1069,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'create-modal') closeCreateModal();
         if (e.target.id === 'generator-modal') closeGeneratorModal();
         if (e.target.id === 'panic-modal') closePanicModal();
+    });
+
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            return false;
+        }
     });
 });
