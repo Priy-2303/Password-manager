@@ -12,44 +12,22 @@ let inactivityTimerInterval = null;
 let cachedVaultItems = [];
 const activeRevealTimers = new Map();
 
-const DEFAULT_DECOY_ENTRIES = [
-    {
-        title: 'Netflix Premium',
-        username: 'family.stream@relaynet.org',
-        password: 'StreamPass#2026!',
-        updated_at: new Date(Date.now() - 86400000 * 2).toISOString()
-    },
-    {
-        title: 'Amazon Prime',
-        username: 'home.orders@privatemail.me',
-        password: 'AmzOrder2026@Secure',
-        updated_at: new Date(Date.now() - 86400000 * 5).toISOString()
-    },
-    {
-        title: 'Spotify Family',
-        username: 'audio.nexus@relaynet.org',
-        password: 'SoundBeat$9921!',
-        updated_at: new Date(Date.now() - 86400000 * 7).toISOString()
-    },
-    {
-        title: 'Instagram Creator',
-        username: 'insta_social_media',
-        password: 'PostLife2026*',
-        updated_at: new Date(Date.now() - 86400000 * 12).toISOString()
-    },
-    {
-        title: 'Proton Decoy Mail',
-        username: 'operator_backup@proton.me',
-        password: 'DecoyInbox!771',
-        updated_at: new Date(Date.now() - 86400000 * 15).toISOString()
-    },
-    {
-        title: 'Steam Gaming Hub',
-        username: 'steam_gamer_35',
-        password: 'SteamGamer!Pass9',
-        updated_at: new Date(Date.now() - 86400000 * 20).toISOString()
-    }
-];
+function generateDecoyEntries() {
+    const services = [
+        { title: 'Netflix Premium', user: 'stream.family@example.com' },
+        { title: 'Amazon Prime', user: 'orders.home@example.com' },
+        { title: 'Spotify Family', user: 'audio.nexus@example.com' },
+        { title: 'Instagram Creator', user: 'insta_creator_media' },
+        { title: 'Proton Decoy Mail', user: 'backup.operator@example.com' },
+        { title: 'Steam Gaming Hub', user: 'gamer_tag_hub' }
+    ];
+    return services.map((s, idx) => ({
+        title: s.title,
+        username: s.user,
+        password: generateCryptographicPassword(18),
+        updated_at: new Date(Date.now() - 86400000 * (idx * 3 + 2)).toISOString()
+    }));
+}
 
 function initAmbientBackground() {
     const canvas = document.getElementById('ambient-canvas');
@@ -253,8 +231,9 @@ async function derivePanicVerificationHash(panicPassword) {
 
 async function prepareDecoyEncryptedItems(key) {
     const list = [];
-    for (let i = 0; i < DEFAULT_DECOY_ENTRIES.length; i++) {
-        const entry = DEFAULT_DECOY_ENTRIES[i];
+    const entries = generateDecoyEntries();
+    for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
         const encryptedData = await encryptSecretPayload(
             { username: entry.username, password: entry.password },
             key
