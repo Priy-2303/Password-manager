@@ -11,17 +11,14 @@
 </head>
 <body class="nexus-theme">
 
-    <!-- Ambient Grid & Particle Matrix -->
     <div class="cyber-ambient">
         <canvas id="ambient-canvas"></canvas>
         <div class="scanline-overlay" aria-hidden="true"></div>
         <div class="vignette-overlay" aria-hidden="true"></div>
     </div>
 
-    <!-- Application Wrapper -->
     <div class="nexus-app" id="app">
 
-        <!-- Command Navigation -->
         <header class="nexus-header" role="banner">
             <div class="header-inner">
                 <div class="brand-group">
@@ -64,11 +61,7 @@
                 </div>
             </div>
         </header>
-
-        <!-- Main Viewport -->
         <main class="nexus-main">
-
-            <!-- VIEW 1: AUTHENTICATION / ACCESS TERMINAL -->
             <section id="auth-screen" class="view-panel active-panel" aria-labelledby="auth-heading">
                 <div class="auth-terminal-frame">
                     
@@ -91,7 +84,6 @@
                         <p class="terminal-desc" id="auth-desc">Zero-knowledge cryptographic initialization. Master key never traverses the wire.</p>
                     </div>
 
-                    <!-- Auth Form -->
                     <form id="auth-form" class="cyber-form" novalidate>
                         <div class="input-block">
                             <label for="username" class="console-label">
@@ -115,7 +107,6 @@
                                 <span class="input-glow"></span>
                             </div>
 
-                            <!-- Master Key Password Strength Meter (Least / Average / Best) -->
                             <div class="strength-meter-wrap" id="auth-strength-wrap">
                                 <div class="strength-bars">
                                     <span class="strength-segment" id="auth-seg-1"></span>
@@ -146,7 +137,6 @@
                 </div>
             </section>
 
-            <!-- VIEW 2: MAIN COMMAND CENTER (VAULT) -->
             <section id="vault-screen" class="view-panel hidden-panel" aria-labelledby="vault-heading">
                 
                 <!-- Central Security Core & Telemetry HUD -->
@@ -172,7 +162,6 @@
                         </div>
                     </div>
 
-                    <!-- Clean Operational Stats Grid -->
                     <div class="hud-stats-grid">
                         <div class="stat-cell">
                             <div class="stat-code">VAULT_STATUS</div>
@@ -196,8 +185,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Vault Operational Toolbar -->
+                
                 <div class="vault-toolbar">
                     <div class="search-capsule">
                         <span class="search-icon">&gt;</span>
@@ -219,7 +207,7 @@
                     </div>
                 </div>
 
-                <!-- Encrypted Capsules Grid -->
+    
                 <div class="capsules-wrapper">
                     <div class="capsules-header">
                         <div class="col-title">CAPSULE IDENTIFIER</div>
@@ -228,7 +216,7 @@
                         <div class="col-actions">DIRECT COMMANDS</div>
                     </div>
                     <div id="vault-capsules-list" class="capsules-grid" role="list">
-                        <!-- Populated dynamically via safe DOM APIs -->
+        
                     </div>
                 </div>
 
@@ -236,7 +224,6 @@
 
         </main>
 
-        <!-- SECURE STATUS FOOTER -->
         <footer class="nexus-footer">
             <div class="footer-inner">
                 <div class="security-declaration">
@@ -251,7 +238,7 @@
 
     </div>
 
-    <!-- MODAL 1: CREATE SECRET CAPSULE -->
+
     <div id="create-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
         <div class="cyber-modal-window">
             <div class="modal-corner c-top-left"></div>
@@ -297,7 +284,7 @@
                         <span class="input-glow"></span>
                     </div>
                     
-                    <!-- Password Strength Meter (Least / Average / Best) -->
+        
                     <div class="strength-meter-wrap" id="strength-meter-wrap">
                         <div class="strength-bars">
                             <span class="strength-segment" id="seg-1"></span>
@@ -309,7 +296,7 @@
                     </div>
                 </div>
 
-                <!-- Real-time Encryption Pipeline Status -->
+    
                 <div class="pipeline-status hidden" id="creation-pipeline">
                     <div class="pipeline-step" id="pipe-1">1. Initializing secure capsule...</div>
                     <div class="pipeline-step" id="pipe-2">2. Encrypting secret payload...</div>
@@ -326,7 +313,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: CRYPTOGRAPHIC GENERATOR CORE -->
     <div id="generator-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="gen-modal-title">
         <div class="cyber-modal-window">
             <div class="modal-corner c-top-left"></div>
@@ -349,7 +335,7 @@
                 </div>
             </div>
 
-            <!-- Generator Controls -->
+
             <div class="generator-controls">
                 <div class="control-row">
                     <div class="slider-label">
@@ -398,7 +384,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: DURESS & PANIC VAULT CONFIGURATION -->
+
     <div id="panic-modal" class="cyber-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="panic-modal-title">
         <div class="cyber-modal-window">
             <div class="modal-corner c-top-left"></div>
@@ -470,7 +456,7 @@
         </div>
     </div>
 
-    <!-- CINEMATIC SECURITY SEQUENCE OVERLAY -->
+
     <div id="cinematic-overlay" class="cinematic-overlay hidden" aria-live="assertive">
         <div class="cinematic-core">
             <div class="cinematic-pulse-ring"></div>
@@ -490,7 +476,7 @@
         </div>
     </div>
 
-    <!-- SECURE TOAST NOTIFICATION HUD -->
+
     <div id="nexus-toast" class="cyber-toast" role="status" aria-live="polite">
         <div class="toast-indicator"></div>
         <div class="toast-content">
