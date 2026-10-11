@@ -13,7 +13,7 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'nexus-vault-super-secure-jwt-secret-key-3035';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
-// Enforce HTTPS in production reverse proxy
+// https reverse proxy
 app.set('trust proxy', 1);
 if (IS_PROD) {
     app.use((req, res, next) => {
@@ -47,7 +47,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Anti-caching for sensitive API endpoints
+// cahing for sensitive apis (very dangerous)
 app.use('/api', (req, res, next) => {
     res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -105,7 +105,7 @@ async function initDatabase() {
             )
         `);
 
-        // Automatic backward-compatibility migration for existing databases:
+        // migration for existing databases
         try {
             const [pwdCols] = await connection.query("SHOW COLUMNS FROM users LIKE 'password_hash'");
             if (pwdCols.length > 0) {
@@ -145,7 +145,7 @@ async function initDatabase() {
     }
 }
 
-// Session authentication middleware (JWT via HttpOnly Secure Cookie)
+// session authentication middleware 
 function authenticateToken(req, res, next) {
     const token = req.cookies.nexus_session;
     if (!token) {
@@ -161,7 +161,7 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// 1. Fetch user salt for zero-knowledge key derivation
+// zero knowledge  user key 
 app.get('/api/auth/salt/:username', authLimiter, async (req, res) => {
     const { username } = req.params;
     try {
@@ -177,7 +177,7 @@ app.get('/api/auth/salt/:username', authLimiter, async (req, res) => {
     }
 });
 
-// 2. Register User (Zero-knowledge: stores only bcrypt(clientAuthHash) + client salt)
+// registration (zero knowledge in bcrypt)
 app.post('/api/register', authLimiter, async (req, res) => {
     const { username, clientAuthHash, salt } = req.body;
     if (!username || !clientAuthHash || !salt) {
@@ -214,7 +214,7 @@ app.post('/api/register', authLimiter, async (req, res) => {
     }
 });
 
-// 3. Login User
+// login 
 app.post('/api/login', authLimiter, async (req, res) => {
     const { username, clientAuthHash } = req.body;
     if (!username || !clientAuthHash) {
@@ -252,13 +252,13 @@ app.post('/api/login', authLimiter, async (req, res) => {
     }
 });
 
-// 4. Logout / Invalidate Session
+// 4. logot
 app.post('/api/logout', (req, res) => {
     res.clearCookie('nexus_session', { httpOnly: true, secure: IS_PROD, sameSite: 'strict' });
     res.json({ message: 'ENCRYPTED_SESSION_TERMINATED' });
 });
 
-// 5. Check Active Session State
+// activity
 app.get('/api/session', authenticateToken, (req, res) => {
     res.json({
         active: true,
@@ -266,7 +266,7 @@ app.get('/api/session', authenticateToken, (req, res) => {
     });
 });
 
-// 6. Get Vault Items (IDOR Protected: strict req.user.id)
+// aapka secret 
 app.get('/api/vault', authenticateToken, apiLimiter, async (req, res) => {
     const userId = req.user.id;
     try {
@@ -281,7 +281,7 @@ app.get('/api/vault', authenticateToken, apiLimiter, async (req, res) => {
     }
 });
 
-// 7. Add Encrypted Vault Item
+// naya secret 
 app.post('/api/vault', authenticateToken, apiLimiter, async (req, res) => {
     const { title, encryptedData } = req.body;
     const userId = req.user.id;
@@ -305,7 +305,7 @@ app.post('/api/vault', authenticateToken, apiLimiter, async (req, res) => {
     }
 });
 
-// 8. Delete Encrypted Vault Item
+// saboot mmitna
 app.delete('/api/vault/:id', authenticateToken, apiLimiter, async (req, res) => {
     const itemId = req.params.id;
     const userId = req.user.id;
@@ -325,7 +325,7 @@ app.delete('/api/vault/:id', authenticateToken, apiLimiter, async (req, res) => 
     }
 });
 
-// Fallback to single page client
+// spc (client mode )
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
