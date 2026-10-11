@@ -1,16 +1,16 @@
-# Dependencies
+# dependencies
 node_modules/
 
-# Environment Variables & Secrets (CRITICAL: NEVER COMMIT)
+#ev and raaj 
 .env
 .env.local
 *.env
 
-# Operating System Files
+# os
 .DS_Store
 Thumbs.db
 
-# Logs & Debug
+# logarithm 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
